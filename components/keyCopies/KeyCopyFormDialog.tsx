@@ -19,47 +19,45 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Key } from "@/types";
 import { api } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
+import { KeyCopy } from "@/types";
 
 const formSchema = z.object({
-	name: z.string().min(1, "Name is required"),
-	description: z.string(),
+	key_id: z.number().nullable(),
 	staff_id: z.number().nullable(),
 });
 
 type KeyFormData = z.infer<typeof formSchema>;
 
 interface KeyFormDialogProps {
-	keyData?: Key; // Renamed from `key` to `keyData`
+	keyCopyData?: KeyCopy;
 	onSuccess: () => void;
 }
 
-export function KeyFormDialog({ keyData, onSuccess }: KeyFormDialogProps) {
+export function KeyCopyFormDialog({ keyCopyData, onSuccess }: KeyFormDialogProps) {
 	const [open, setOpen] = useState(false);
 	const { toast } = useToast();
-	const isEditing = !!keyData;
+	const isEditing = !!keyCopyData;
 
 	const form = useForm<KeyFormData>({
 		resolver: zodResolver(formSchema),
-		defaultValues: keyData || {
-			name: "",
-			description: "",
+		defaultValues: keyCopyData || {
+			key_id: null,
 			staff_id: null,
 		},
 	});
 
 	const onSubmit = async (data: KeyFormData) => {
 		try {
-			if (isEditing && keyData) {
-				await api.updateKey(keyData.id, data);
+			if (isEditing && keyCopyData) {
+				await api.updateKey(keyCopyData.id, data);
 				toast({
 					title: "Key Updated",
 					description: "The key has been successfully updated.",
 				});
 			} else {
-				await api.createKey(data);
+				await api.createKeyCopy(data);
 				toast({
 					title: "Key Created",
 					description: "A new key has been successfully created.",
@@ -69,7 +67,7 @@ export function KeyFormDialog({ keyData, onSuccess }: KeyFormDialogProps) {
 			onSuccess();
 			form.reset();
 		} catch (error) {
-			// console.error("Error saving key:", error);
+			console.error("Error saving key:", error);
 
 			// Show a toast notification on error
 			toast({
@@ -84,36 +82,28 @@ export function KeyFormDialog({ keyData, onSuccess }: KeyFormDialogProps) {
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
 				<Button variant={isEditing ? "outline" : "default"}>
-					{isEditing ? "Edit" : "Add New Key"}
+					{isEditing ? "Edit" : "Add New Key Copy"}
 				</Button>
 			</DialogTrigger>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>{isEditing ? "Edit Key" : "Add New Key"}</DialogTitle>
+					<DialogTitle>{isEditing ? "Edit Key Copy" : "Add New Key Copy"}</DialogTitle>
 				</DialogHeader>
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 						<FormField
 							control={form.control}
-							name="name"
+							name="key_id"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>Name</FormLabel>
+									<FormLabel>Key ID</FormLabel>
 									<FormControl>
-										<Input {...field} />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<FormField
-							control={form.control}
-							name="description"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Description</FormLabel>
-									<FormControl>
-										<Input {...field} />
+										<Input
+											type="number"
+											{...field}
+											onChange={e => field.onChange(e.target.value ? Number(e.target.value) : "")}
+											value={field.value !== null ? field.value : ""}
+										/>
 									</FormControl>
 									<FormMessage />
 								</FormItem>

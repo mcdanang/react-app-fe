@@ -11,8 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useQuery, useQueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import { Key } from "@/types";
-import { KeyFormDialog } from "@/components/keys/KeyFormDialog";
+import { KeyCopy } from "@/types";
+
 import {
 	Dialog,
 	DialogContent,
@@ -21,10 +21,11 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { KeyCopyFormDialog } from "./KeyCopyFormDialog";
 
-export function KeysTable() {
+export function KeyCopiesTable() {
 	const [page, setPage] = useState(1);
-	const [nameFilter, setNameFilter] = useState("");
+	const [keyIdFilter, setKeyIdFilter] = useState("");
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [selectedKeyId, setSelectedKeyId] = useState<number | null>(null);
 
@@ -34,19 +35,25 @@ export function KeysTable() {
 
 	// Fetch keys with pagination and filter
 	const { data, isLoading } = useQuery({
-		queryKey: ["keys", page, nameFilter],
-		queryFn: () => api.getKeys({ page, pageSize, name: nameFilter }),
+		queryKey: ["keyCopies", page, keyIdFilter],
+		queryFn: () => api.getKeyCopies({ page, pageSize, name: keyIdFilter }),
 	});
+
+	console.log(data);
 
 	const handleDelete = async () => {
 		if (selectedKeyId !== null) {
 			try {
 				await api.deleteKey(selectedKeyId);
-				queryClient.invalidateQueries({ queryKey: ["keys"] });
-				toast({ title: "Success", description: "Key deleted successfully." });
+				queryClient.invalidateQueries({ queryKey: ["keyCopies"] });
+				toast({ title: "Success", description: "Key copy deleted successfully." });
 			} catch (error) {
 				console.error(error);
-				toast({ variant: "destructive", title: "Error", description: "Failed to delete the key." });
+				toast({
+					variant: "destructive",
+					title: "Error",
+					description: "Failed to delete the key copy.",
+				});
 			} finally {
 				setDeleteDialogOpen(false);
 				setSelectedKeyId(null);
@@ -59,30 +66,31 @@ export function KeysTable() {
 		setDeleteDialogOpen(true);
 	};
 
-	// Reset page to 1 when nameFilter changes
+	// Reset page to 1 when keyIdFilter changes
 	useEffect(() => {
 		setPage(1);
-	}, [nameFilter]);
+	}, [keyIdFilter]);
 
 	return (
 		<QueryClientProvider client={queryClient}>
 			<div className="space-y-4">
 				<div className="flex items-center justify-between">
 					<Input
-						placeholder="Filter by name..."
-						value={nameFilter}
-						onChange={e => setNameFilter(e.target.value)}
+						placeholder="Filter by Key ID..."
+						value={keyIdFilter}
+						onChange={e => setKeyIdFilter(e.target.value)}
 						className="max-w-sm"
 					/>
-					<KeyFormDialog onSuccess={() => queryClient.invalidateQueries({ queryKey: ["keys"] })} />
+					<KeyCopyFormDialog
+						onSuccess={() => queryClient.invalidateQueries({ queryKey: ["keyCopies"] })}
+					/>
 				</div>
 
 				<Table>
 					<TableHeader>
 						<TableRow>
-							<TableHead>ID</TableHead>
-							<TableHead>Name</TableHead>
-							<TableHead>Description</TableHead>
+							<TableHead>Key Copy ID</TableHead>
+							<TableHead>Key ID</TableHead>
 							<TableHead>Staff ID</TableHead>
 							<TableHead>Actions</TableHead>
 						</TableRow>
@@ -95,21 +103,20 @@ export function KeysTable() {
 								</TableCell>
 							</TableRow>
 						) : data?.data?.length ? (
-							data.data.map((key: Key) => (
-								<TableRow key={key.id}>
-									<TableCell>{key.id}</TableCell>
-									<TableCell>{key.name}</TableCell>
-									<TableCell>{key.description}</TableCell>
-									<TableCell>{key.staff_id || "None"}</TableCell>
+							data?.data?.map((keyCopy: KeyCopy) => (
+								<TableRow key={keyCopy.id}>
+									<TableCell>{keyCopy.id}</TableCell>
+									<TableCell>{keyCopy.key_id}</TableCell>
+									<TableCell>{keyCopy.staff_id || "None"}</TableCell>
 									<TableCell className="space-x-2">
-										<KeyFormDialog
-											keyData={key}
-											onSuccess={() => queryClient.invalidateQueries({ queryKey: ["keys"] })}
+										<KeyCopyFormDialog
+											keyCopyData={keyCopy}
+											onSuccess={() => queryClient.invalidateQueries({ queryKey: ["keyCopies"] })}
 										/>
 										<Button
 											variant="destructive"
 											size="sm"
-											onClick={() => openDeleteDialog(key.id)}
+											onClick={() => openDeleteDialog(keyCopy.id)}
 										>
 											Delete
 										</Button>
@@ -154,7 +161,7 @@ export function KeysTable() {
 					<DialogHeader>
 						<DialogTitle>Confirm Deletion</DialogTitle>
 					</DialogHeader>
-					<p>Are you sure you want to delete this key? This action cannot be undone.</p>
+					<p>Are you sure you want to delete this key copy? This action cannot be undone.</p>
 					<DialogFooter>
 						<Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
 							Cancel

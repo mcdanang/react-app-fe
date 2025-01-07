@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Key, PaginatedResponse, FilterParams } from "@/types";
+import { Key, PaginatedResponse, FilterParams, KeyCopy } from "@/types";
 
 const BASE_URL = "http://localhost:8000";
 
@@ -29,5 +29,15 @@ export const api = {
 		await axios.delete(`${BASE_URL}/keys/${id}`);
 	},
 
-	// Additional methods for dialog interaction (if needed in future)
+	// Key Copies
+	getKeyCopies: async (params: FilterParams): Promise<PaginatedResponse<KeyCopy>> => {
+		const { data } = await axios.get(`${BASE_URL}/key-copies`, { params });
+		console.log("Data", data);
+		return data;
+	},
+
+	createKeyCopy: async (keyCopy: Omit<KeyCopy, "id">): Promise<KeyCopy> => {
+		const { data } = await axios.post(`${BASE_URL}/key-copies`, keyCopy);
+		return data;
+	},
 };
