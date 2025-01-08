@@ -69,7 +69,7 @@ export function KeyFormDialog({ keyData, onSuccess }: KeyFormDialogProps) {
 			onSuccess();
 			form.reset();
 		} catch (error) {
-			// console.error("Error saving key:", error);
+			console.error("Error saving key:", error);
 
 			// Show a toast notification on error
 			toast({

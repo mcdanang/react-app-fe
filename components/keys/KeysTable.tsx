@@ -83,7 +83,7 @@ export function KeysTable() {
 							<TableHead>ID</TableHead>
 							<TableHead>Name</TableHead>
 							<TableHead>Description</TableHead>
-							<TableHead>Staff ID</TableHead>
+							<TableHead>Staff Name</TableHead>
 							<TableHead>Actions</TableHead>
 						</TableRow>
 					</TableHeader>
@@ -100,7 +100,7 @@ export function KeysTable() {
 									<TableCell>{key.id}</TableCell>
 									<TableCell>{key.name}</TableCell>
 									<TableCell>{key.description}</TableCell>
-									<TableCell>{key.staff_id || "None"}</TableCell>
+									<TableCell>{key.staff_name || "None"}</TableCell>
 									<TableCell className="space-x-2">
 										<KeyFormDialog
 											keyData={key}

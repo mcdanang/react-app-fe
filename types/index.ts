@@ -5,6 +5,7 @@ export interface Key {
 	name: string;
 	description: string;
 	staff_id: number | null;
+	staff_name: string | null;
 }
 
 export interface Staff {
@@ -17,6 +18,8 @@ export interface KeyCopy {
 	id: number;
 	key_id: number;
 	staff_id: number;
+	staff_name: string;
+	key_name: string;
 }
 
 export interface PaginatedResponse<T> {

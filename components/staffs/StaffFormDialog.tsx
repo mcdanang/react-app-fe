@@ -1,3 +1,4 @@
+// StaffFormDialog.tsx
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,58 +20,61 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Staff } from "@/types";
 import { api } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-import { KeyCopy } from "@/types";
 
 const formSchema = z.object({
-	key_id: z.number().optional(),
-	staff_id: z.number().optional(),
+	name: z.string().min(1, "Name is required"),
+	email: z.string().email("Invalid email address"),
+	role: z.string().min(1, "Role is required"),
 });
 
-type KeyCopyFormData = z.infer<typeof formSchema>;
+type StaffFormData = z.infer<typeof formSchema>;
 
-interface KeyCopyFormDialogProps {
-	keyCopyData?: KeyCopy;
+interface StaffFormDialogProps {
+	staffData?: Staff;
 	onSuccess: () => void;
 }
 
-export function KeyCopyFormDialog({ keyCopyData, onSuccess }: KeyCopyFormDialogProps) {
+export function StaffFormDialog({ staffData, onSuccess }: StaffFormDialogProps) {
 	const [open, setOpen] = useState(false);
 	const { toast } = useToast();
-	const isEditing = !!keyCopyData;
+	const isEditing = !!staffData;
 
-	const form = useForm<KeyCopyFormData>({
+	const form = useForm<StaffFormData>({
 		resolver: zodResolver(formSchema),
-		defaultValues: keyCopyData || {},
+		defaultValues: staffData || {
+			name: "",
+			email: "",
+			role: "",
+		},
 	});
 
-	const onSubmit = async (data: KeyCopyFormData) => {
+	const onSubmit = async (data: StaffFormData) => {
 		try {
-			if (isEditing && keyCopyData) {
-				await api.updateKeyCopy(keyCopyData.id, data);
+			if (isEditing && staffData) {
+				await api.updateStaff(staffData.id, data);
 				toast({
-					title: "Key Copy Updated",
-					description: "The key copy has been successfully updated.",
+					title: "Staff Updated",
+					description: "The staff member has been successfully updated.",
 				});
 			} else {
-				await api.createKeyCopy(data);
+				await api.createStaff(data);
 				toast({
-					title: "Key Copy Created",
-					description: "A new key copy has been successfully created.",
+					title: "Staff Created",
+					description: "A new staff member has been successfully created.",
 				});
 			}
 			setOpen(false);
 			onSuccess();
 			form.reset();
 		} catch (error) {
-			console.error("Error saving key:", error);
-
-			// Show a toast notification on error
+			console.error("Error saving staff:", error);
 			toast({
 				variant: "destructive",
 				title: "Error",
-				description: "An error occurred while saving the key copy. Please try again.",
+				description: "An error occurred while saving the staff member. Please try again.",
 			});
 		}
 	};
@@ -79,28 +83,23 @@ export function KeyCopyFormDialog({ keyCopyData, onSuccess }: KeyCopyFormDialogP
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
 				<Button variant={isEditing ? "outline" : "default"}>
-					{isEditing ? "Edit" : "Add New Key Copy"}
+					{isEditing ? "Edit" : "Add New Staff"}
 				</Button>
 			</DialogTrigger>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>{isEditing ? "Edit Key Copy" : "Add New Key Copy"}</DialogTitle>
+					<DialogTitle>{isEditing ? "Edit Staff" : "Add New Staff"}</DialogTitle>
 				</DialogHeader>
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 						<FormField
 							control={form.control}
-							name="key_id"
+							name="name"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>Key ID</FormLabel>
+									<FormLabel>Name</FormLabel>
 									<FormControl>
-										<Input
-											type="number"
-											{...field}
-											onChange={e => field.onChange(e.target.value ? Number(e.target.value) : "")}
-											value={field.value !== null ? field.value : ""}
-										/>
+										<Input {...field} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -108,17 +107,25 @@ export function KeyCopyFormDialog({ keyCopyData, onSuccess }: KeyCopyFormDialogP
 						/>
 						<FormField
 							control={form.control}
-							name="staff_id"
+							name="email"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>Staff ID</FormLabel>
+									<FormLabel>Email</FormLabel>
 									<FormControl>
-										<Input
-											type="number"
-											{...field}
-											onChange={e => field.onChange(e.target.value ? Number(e.target.value) : "")}
-											value={field.value !== null ? field.value : ""}
-										/>
+										<Input {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<FormField
+							control={form.control}
+							name="role"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Role</FormLabel>
+									<FormControl>
+										<Input {...field} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>

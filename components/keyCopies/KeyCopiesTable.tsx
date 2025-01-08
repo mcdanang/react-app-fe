@@ -25,9 +25,9 @@ import { KeyCopyFormDialog } from "./KeyCopyFormDialog";
 
 export function KeyCopiesTable() {
 	const [page, setPage] = useState(1);
-	const [keyIdFilter, setKeyIdFilter] = useState("");
+	const [nameFilter, setNameFilter] = useState("");
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-	const [selectedKeyId, setSelectedKeyId] = useState<number | null>(null);
+	const [selectedKeyCopyId, setSelectedKeyCopyId] = useState<number | null>(null);
 
 	const queryClient = useQueryClient();
 	const { toast } = useToast();
@@ -35,16 +35,14 @@ export function KeyCopiesTable() {
 
 	// Fetch keys with pagination and filter
 	const { data, isLoading } = useQuery({
-		queryKey: ["keyCopies", page, keyIdFilter],
-		queryFn: () => api.getKeyCopies({ page, pageSize, name: keyIdFilter }),
+		queryKey: ["keyCopies", page, nameFilter],
+		queryFn: () => api.getKeyCopies({ page, pageSize, name: nameFilter }),
 	});
 
-	console.log(data);
-
 	const handleDelete = async () => {
-		if (selectedKeyId !== null) {
+		if (selectedKeyCopyId !== null) {
 			try {
-				await api.deleteKey(selectedKeyId);
+				await api.deleteKeyCopy(selectedKeyCopyId);
 				queryClient.invalidateQueries({ queryKey: ["keyCopies"] });
 				toast({ title: "Success", description: "Key copy deleted successfully." });
 			} catch (error) {
@@ -56,29 +54,29 @@ export function KeyCopiesTable() {
 				});
 			} finally {
 				setDeleteDialogOpen(false);
-				setSelectedKeyId(null);
+				setSelectedKeyCopyId(null);
 			}
 		}
 	};
 
 	const openDeleteDialog = (id: number) => {
-		setSelectedKeyId(id);
+		setSelectedKeyCopyId(id);
 		setDeleteDialogOpen(true);
 	};
 
-	// Reset page to 1 when keyIdFilter changes
+	// Reset page to 1 when nameFilter changes
 	useEffect(() => {
 		setPage(1);
-	}, [keyIdFilter]);
+	}, [nameFilter]);
 
 	return (
 		<QueryClientProvider client={queryClient}>
 			<div className="space-y-4">
 				<div className="flex items-center justify-between">
 					<Input
-						placeholder="Filter by Key ID..."
-						value={keyIdFilter}
-						onChange={e => setKeyIdFilter(e.target.value)}
+						placeholder="Filter by name..."
+						value={nameFilter}
+						onChange={e => setNameFilter(e.target.value)}
 						className="max-w-sm"
 					/>
 					<KeyCopyFormDialog
@@ -89,9 +87,10 @@ export function KeyCopiesTable() {
 				<Table>
 					<TableHeader>
 						<TableRow>
-							<TableHead>Key Copy ID</TableHead>
+							<TableHead>ID</TableHead>
+							<TableHead>Key Name</TableHead>
 							<TableHead>Key ID</TableHead>
-							<TableHead>Staff ID</TableHead>
+							<TableHead>Staff Name</TableHead>
 							<TableHead>Actions</TableHead>
 						</TableRow>
 					</TableHeader>
@@ -106,8 +105,9 @@ export function KeyCopiesTable() {
 							data?.data?.map((keyCopy: KeyCopy) => (
 								<TableRow key={keyCopy.id}>
 									<TableCell>{keyCopy.id}</TableCell>
+									<TableCell>{keyCopy.key_name}</TableCell>
 									<TableCell>{keyCopy.key_id}</TableCell>
-									<TableCell>{keyCopy.staff_id || "None"}</TableCell>
+									<TableCell>{keyCopy.staff_name || "None"}</TableCell>
 									<TableCell className="space-x-2">
 										<KeyCopyFormDialog
 											keyCopyData={keyCopy}
