@@ -129,17 +129,26 @@ export function StaffTable() {
 					</TableBody>
 				</Table>
 
-				<div className="flex justify-between items-center">
-					<Button disabled={page === 1} onClick={() => setPage(prev => Math.max(prev - 1, 1))}>
-						Previous
-					</Button>
-					<span>Page {page}</span>
-					<Button
-						disabled={!data || data?.data?.length < pageSize}
-						onClick={() => setPage(prev => prev + 1)}
-					>
-						Next
-					</Button>
+				<div className="flex items-center justify-between">
+					<div className="text-sm text-gray-500">
+						Page {page} of {data?.totalPages || 1}
+					</div>
+					<div className="space-x-2">
+						<Button
+							variant="outline"
+							onClick={() => setPage(p => Math.max(1, p - 1))}
+							disabled={page === 1}
+						>
+							Previous
+						</Button>
+						<Button
+							variant="outline"
+							onClick={() => setPage(p => p + 1)}
+							disabled={!data || page >= data.totalPages}
+						>
+							Next
+						</Button>
+					</div>
 				</div>
 
 				<Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

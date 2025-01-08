@@ -26,7 +26,6 @@ import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
 	name: z.string().min(1, "Name is required"),
-	email: z.string().email("Invalid email address"),
 	role: z.string().min(1, "Role is required"),
 });
 
@@ -46,7 +45,6 @@ export function StaffFormDialog({ staffData, onSuccess }: StaffFormDialogProps) 
 		resolver: zodResolver(formSchema),
 		defaultValues: staffData || {
 			name: "",
-			email: "",
 			role: "",
 		},
 	});
@@ -105,19 +103,7 @@ export function StaffFormDialog({ staffData, onSuccess }: StaffFormDialogProps) 
 								</FormItem>
 							)}
 						/>
-						<FormField
-							control={form.control}
-							name="email"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Email</FormLabel>
-									<FormControl>
-										<Input {...field} />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
+
 						<FormField
 							control={form.control}
 							name="role"
